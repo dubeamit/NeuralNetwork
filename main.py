@@ -1,5 +1,3 @@
-from augmentation import resize
-from os import error
 import cv2
 import numpy as np
 
@@ -13,6 +11,17 @@ def sigmoid(x):
 
 def sigmoid_d(x):
     return sigmoid(x) * (1 - sigmoid(x))
+
+def feedforward(input, weights):
+    convolution = np.dot(input, weights)
+    output = sigmoid(convolution)
+    return output
+
+def backpropogation(output, label, input):
+    error = output - label
+    adjustment = error * sigmoid_d(output)
+    weights_adjustment = np.dot(adjustment, input)
+    return weights_adjustment
 
 
 # 1. read image
@@ -29,32 +38,12 @@ labels = np.array([0, 1])
 
 # 2. weights
 weights = np.array([0.5]*9)
-# print(weights)
+# print(weights.shape)
 
 epochs = 100
 for i in range(epochs):
-    print()
-    print('round', i+1)
-    temp_weigths = weights.copy()
-    for img, label in zip(dataset, labels):
-        # 3. convolve 
-        convolution = sum(img * weights)
-        print('convolution', convolution)
-        # 4. activation function
-        result = sigmoid(convolution)
-        print('result', result)
-        # 5. error
-        error = result - label
-        print('error', error)
-        # 6. Adjustment (slope)
-        adjustment = error * sigmoid_d(result)
-        print('adjustment', adjustment)
-        # 7. update weights
-        temp_weigths -= np.dot(img, adjustment)
-        print('temp_weights', temp_weigths)
-        print()
-
-    # update weight after every round in epochs
-    weights = temp_weigths.copy()
-    print('weights', weights)
-
+    output = feedforward(dataset, weights)
+    weights -= backpropogation(output, labels, dataset)
+    # print(weights)
+    
+print(output)
